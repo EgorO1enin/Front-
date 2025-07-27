@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Фреза — Одиночный режим</title>
+    <title>Фреза — Мультистаночный режим</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: Arial, sans-serif; background: #f4f4f4; color: #333; }
@@ -25,178 +25,154 @@
             color: white;
         }
 
-        .status-panel {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .main-container {
+        .machines-grid {
             display: grid;
-            grid-template-columns: 3fr 1fr;
-            padding: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
+            padding: 20px;
         }
 
-        .visualization {
-            background: #1a1a1a;
-            border-radius: 10px;
-            position: relative;
-            height: 500px;
-        }
-
-        .nav-cube {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(255,255,255,0.2);
-            padding: 10px;
-            border-radius: 4px;
-            color: white;
-        }
-
-        .gcode-panel {
-            margin-top: 10px;
-            background: white;
-            padding: 10px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-        }
-
-        .control-panel {
+        .machine-window {
             background: white;
             border-radius: 10px;
             padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
         }
 
-        .axis-control {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-
-        .axis-btn, .macro-btn, .control-btn {
-            padding: 8px;
-            background: #3498db;
-            border: none;
-            color: white;
-            border-radius: 4px;
+        .machine-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
             cursor: pointer;
         }
 
-        .input-group label {
-            font-size: 14px;
-            display: block;
-            margin-bottom: 5px;
+        .machine-visualization {
+            background: #1a1a1a;
+            height: 200px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            position: relative;
         }
 
-        .input-group input {
-            width: 100%;
-            padding: 6px;
-            border: 1px solid #ccc;
+        .mini-nav-cube {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            color: white;
+            font-size: 12px;
+        }
+
+        .machine-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .machine-btn {
+            padding: 6px 12px;
+            border: none;
             border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
         }
 
-        .console {
+        .status-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+
+        .global-console {
             background: #111;
             color: #00ff00;
             font-family: monospace;
             padding: 10px;
+            margin: 20px;
             border-radius: 8px;
             height: 150px;
             overflow-y: auto;
-            margin-top: 20px;
-        }
-
-        .console input {
-            width: 100%;
-            background: transparent;
-            border: none;
-            color: #0f0;
-            padding: 5px;
         }
     </style>
 </head>
 <body>
 <div class="top-bar">
-    <button class="mode-switch">Мультистаночный режим</button>
-    <div class="status-panel">
-        <div>Координаты: X=120.0 Y=45.5 Z=10.0 | Машинные: X=320.0 Y=145.5 Z=110.0</div>
-        <div style="background:#2ecc71; width: 20px; height: 20px; border-radius: 50%;"></div>
+    <button class="mode-switch">Одиночный режим</button>
+    <div>Активные станки: 4</div>
+</div>
+
+<div class="machines-grid">
+    <!-- Станок 1 -->
+    <div class="machine-window">
+        <div class="machine-header">
+            <div>Станок 1: Tormach PCNC 440</div>
+            <div class="status-indicator" style="background: #2ecc71;"></div>
+        </div>
+        <div class="machine-visualization">
+            <div class="mini-nav-cube">▲</div>
+        </div>
+        <div class="machine-controls">
+            <button class="machine-btn" style="background: #3498db;">Пауза</button>
+            <button class="machine-btn" style="background: #e74c3c;">Сброс</button>
+            <button class="machine-btn" style="background: #f39c12;">Отмена</button>
+        </div>
+    </div>
+
+    <!-- Станок 2 -->
+    <div class="machine-window">
+        <div class="machine-header">
+            <div>Станок 2: Haas VF-2</div>
+            <div class="status-indicator" style="background: #f1c40f;"></div>
+        </div>
+        <div class="machine-visualization">
+            <div class="mini-nav-cube">▶</div>
+        </div>
+        <div class="machine-controls">
+            <button class="machine-btn" style="background: #3498db;">Пауза</button>
+            <button class="machine-btn" style="background: #e74c3c;">Сброс</button>
+            <button class="machine-btn" style="background: #f39c12;">Отмена</button>
+        </div>
+    </div>
+
+    <!-- Станок 3 -->
+    <div class="machine-window">
+        <div class="machine-header">
+            <div>Станок 3: DMG Mori CLX 350</div>
+            <div class="status-indicator" style="background: #e74c3c;"></div>
+        </div>
+        <div class="machine-visualization">
+            <div class="mini-nav-cube">▼</div>
+        </div>
+        <div class="machine-controls">
+            <button class="machine-btn" style="background: #3498db;">Пауза</button>
+            <button class="machine-btn" style="background: #e74c3c;">Сброс</button>
+            <button class="machine-btn" style="background: #f39c12;">Отмена</button>
+        </div>
+    </div>
+
+    <!-- Станок 4 -->
+    <div class="machine-window">
+        <div class="machine-header">
+            <div>Станок 4: Mazak VTC-200</div>
+            <div class="status-indicator" style="background: #2ecc71;"></div>
+        </div>
+        <div class="machine-visualization">
+            <div class="mini-nav-cube">◀</div>
+        </div>
+        <div class="machine-controls">
+            <button class="machine-btn" style="background: #3498db;">Пауза</button>
+            <button class="machine-btn" style="background: #e74c3c;">Сброс</button>
+            <button class="machine-btn" style="background: #f39c12;">Отмена</button>
+        </div>
     </div>
 </div>
 
-<div class="main-container">
-    <div>
-        <div class="visualization">
-            <div class="nav-cube">↑ ◀ ▶ ↓</div>
-        </div>
-
-        <div class="gcode-panel">
-            <input type="file" accept=".gcode,.nc,.tap,.txt">
-            <button class="control-btn">Загрузка кода</button>
-            <button class="control-btn">Старт</button>
-            <button class="control-btn">Пауза/Запуск</button>
-            <button class="control-btn">Отмена</button>
-            <progress value="0.3" max="1" style="flex:1;"></progress>
-        </div>
-
-        <div class="console">
-            > Станок готов к работе<br>
-            > Загрузка G-кода завершена<br>
-            <input type="text" placeholder="Введите команду...">
-        </div>
-    </div>
-
-    <div class="control-panel">
-        <h3>Ручное управление</h3>
-        <button class="control-btn">On/Off Шпиндель</button>
-
-        <div class="input-group">
-            <label>Скорость вращения (об/мин):</label>
-            <input type="number" value="12000">
-        </div>
-
-        <div class="input-group">
-            <label>Скорость подачи (мм/сек):</label>
-            <input type="number" value="5">
-        </div>
-
-        <div class="input-group">
-            <label>Шаг (мм):</label>
-            <input type="number" value="10">
-        </div>
-
-        <div class="axis-control">
-            <button class="axis-btn">+X</button>
-            <button class="axis-btn">+Y</button>
-            <button class="axis-btn">+Z</button>
-            <button class="axis-btn">-X</button>
-            <button class="axis-btn">-Y</button>
-            <button class="axis-btn">-Z</button>
-        </div>
-
-        <h4>Настройки нуля</h4>
-        <button class="control-btn">Ноль по XY</button>
-        <button class="control-btn">Ноль по Z</button>
-        <button class="control-btn">Авто-Z датчик</button>
-        <button class="control-btn">Безопасное положение</button>
-        <button class="control-btn">В точку ноль</button>
-
-        <h4>Аварийные действия</h4>
-        <button class="control-btn" style="background:#e74c3c">Сброс</button>
-        <button class="control-btn" style="background:#f39c12">Разблокировка после сброса</button>
-
-        <h4>Макросы</h4>
-        <button class="macro-btn">Поднять шпиндель на 50 мм и в безопасную зону</button>
-    </div>
+<div class="global-console">
+    > Система: Все станки подключены<br>
+    > Станок 1: Выполнение программы 45%<br>
+    > Станок 3: Обнаружена ошибка позиционирования<br>
+    > Станок 4: Готов к работе<br>
 </div>
 </body>
 </html>
