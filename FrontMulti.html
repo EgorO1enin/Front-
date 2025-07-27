@@ -25,64 +25,78 @@
             color: white;
         }
 
-        .machines-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            padding: 20px;
+        .machines-row {
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            padding: 40px 0 0 40px;
         }
 
         .machine-window {
             background: white;
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             position: relative;
+            min-width: 320px;
+            max-width: 380px;
+            margin-right: 28px;
         }
 
         .machine-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 18px;
             cursor: pointer;
+        }
+        .machine-header > div:first-child {
+            font-size: 1.3rem;
+            font-weight: 500;
+        }
+        .status-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #2ecc71 !important;
         }
 
         .machine-visualization {
-            background: #1a1a1a;
+            background: #222;
             height: 200px;
-            border-radius: 8px;
-            margin-bottom: 10px;
+            width: 95%;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            margin-left: auto;
+            margin-right: auto;
             position: relative;
         }
-
         .mini-nav-cube {
             position: absolute;
-            top: 5px;
-            right: 5px;
+            top: 10px;
+            right: 14px;
             color: white;
-            font-size: 12px;
+            font-size: 16px;
         }
 
         .machine-controls {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             flex-wrap: wrap;
+            margin-top: 12px;
         }
 
         .machine-btn {
-            padding: 6px 12px;
+            padding: 10px 22px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 1rem;
+            font-weight: 500;
         }
-
-        .status-indicator {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-        }
+        .machine-btn:nth-child(1) { background: #3498db; color: #fff; }
+        .machine-btn:nth-child(2) { background: #e74c3c; color: #fff; }
+        .machine-btn:nth-child(3) { background: #f39c12; color: #fff; }
 
         .global-console {
             background: #111;
@@ -99,15 +113,15 @@
 <body>
 <div class="top-bar">
     <button class="mode-switch">Одиночный режим</button>
-    <div>Активные станки: 4</div>
+    <div>Активные станки: 1</div>
 </div>
 
-<div class="machines-grid">
+<div class="machines-row">
     <!-- Станок 1 -->
     <div class="machine-window">
         <div class="machine-header">
-            <div>Станок 1: Tormach PCNC 440</div>
-            <div class="status-indicator" style="background: #2ecc71;"></div>
+            <div>Станок: MKS DLC32</div>
+            <div class="status-indicator"></div>
         </div>
         <div class="machine-visualization">
             <div class="mini-nav-cube">▲</div>
@@ -118,61 +132,8 @@
             <button class="machine-btn" style="background: #f39c12;">Отмена</button>
         </div>
     </div>
-
-    <!-- Станок 2 -->
-    <div class="machine-window">
-        <div class="machine-header">
-            <div>Станок 2: Haas VF-2</div>
-            <div class="status-indicator" style="background: #f1c40f;"></div>
-        </div>
-        <div class="machine-visualization">
-            <div class="mini-nav-cube">▶</div>
-        </div>
-        <div class="machine-controls">
-            <button class="machine-btn" style="background: #3498db;">Пауза</button>
-            <button class="machine-btn" style="background: #e74c3c;">Сброс</button>
-            <button class="machine-btn" style="background: #f39c12;">Отмена</button>
-        </div>
-    </div>
-
-    <!-- Станок 3 -->
-    <div class="machine-window">
-        <div class="machine-header">
-            <div>Станок 3: DMG Mori CLX 350</div>
-            <div class="status-indicator" style="background: #e74c3c;"></div>
-        </div>
-        <div class="machine-visualization">
-            <div class="mini-nav-cube">▼</div>
-        </div>
-        <div class="machine-controls">
-            <button class="machine-btn" style="background: #3498db;">Пауза</button>
-            <button class="machine-btn" style="background: #e74c3c;">Сброс</button>
-            <button class="machine-btn" style="background: #f39c12;">Отмена</button>
-        </div>
-    </div>
-
-    <!-- Станок 4 -->
-    <div class="machine-window">
-        <div class="machine-header">
-            <div>Станок 4: Mazak VTC-200</div>
-            <div class="status-indicator" style="background: #2ecc71;"></div>
-        </div>
-        <div class="machine-visualization">
-            <div class="mini-nav-cube">◀</div>
-        </div>
-        <div class="machine-controls">
-            <button class="machine-btn" style="background: #3498db;">Пауза</button>
-            <button class="machine-btn" style="background: #e74c3c;">Сброс</button>
-            <button class="machine-btn" style="background: #f39c12;">Отмена</button>
-        </div>
-    </div>
 </div>
 
-<div class="global-console">
-    > Система: Все станки подключены<br>
-    > Станок 1: Выполнение программы 45%<br>
-    > Станок 3: Обнаружена ошибка позиционирования<br>
-    > Станок 4: Готов к работе<br>
-</div>
+<!-- Консоль можно убрать или оставить пустой, если не нужна -->
 </body>
 </html>

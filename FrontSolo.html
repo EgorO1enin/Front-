@@ -89,6 +89,51 @@
       color: white;
       border-radius: 4px;
       cursor: pointer;
+      transition: background 0.15s;
+    }
+    .spindle-on {
+      background: #27ae60 !important;
+    }
+    .axis-btn:active, .macro-btn:active, .control-btn:active {
+      filter: brightness(0.85);
+    }
+    .control-btn.disabled {
+      background: #bdc3c7 !important;
+      color: #eee !important;
+      cursor: not-allowed;
+      pointer-events: auto;
+      opacity: 1;
+    }
+    .file-input-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    .file-input-label {
+      display: inline-block;
+      padding: 8px 16px;
+      background: #3498db;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-size: 14px;
+      user-select: none;
+    }
+    .file-input-label:active {
+      filter: brightness(0.85);
+    }
+    .file-input {
+      display: none;
+    }
+    .mode-switch:active {
+      filter: brightness(0.85);
+    }
+    .visualization.multi {
+      background: #34495e;
+    }
+    .nav-cube.multi {
+      background: rgba(52,152,219,0.2);
+      color: #fff;
     }
 
     .input-group label {
@@ -126,7 +171,7 @@
 </head>
 <body>
 <div class="top-bar">
-  <button class="mode-switch">Мультистаночный режим</button>
+  <button class="mode-switch" id="mode-switch-btn">Мультистаночный режим</button>
   <div class="status-panel">
     <div>Координаты: X=120.0 Y=45.5 Z=10.0 | Машинные: X=320.0 Y=145.5 Z=110.0</div>
     <div style="background:#2ecc71; width: 20px; height: 20px; border-radius: 50%;"></div>
@@ -135,17 +180,21 @@
 
 <div class="main-container">
   <div>
-    <div class="visualization">
-      <div class="nav-cube">↑ ◀ ▶ ↓</div>
+    <div class="visualization" id="visualization">
+      <div class="nav-cube" id="nav-cube">↑ ◀ ▶ ↓</div>
+      <div id="multi-label" style="display:none;position:absolute;left:20px;top:20px;color:#fff;font-size:22px;">Мультистаночный режим</div>
     </div>
 
     <div class="gcode-panel">
-      <input type="file" accept=".gcode,.nc,.tap,.txt">
-      <button class="control-btn">Загрузка кода</button>
-      <button class="control-btn">Старт</button>
-      <button class="control-btn">Пауза/Запуск</button>
-      <button class="control-btn">Отмена</button>
-      <progress value="0.3" max="1" style="flex:1;"></progress>
+      <span class="file-input-wrapper">
+        <label class="file-input-label" for="gcode-file">Выбор файла</label>
+        <input type="file" accept=".gcode,.nc,.tap,.txt" id="gcode-file" class="file-input">
+      </span>
+      <button class="control-btn" id="load-btn">Загрузка кода</button>
+      <button class="control-btn disabled" id="start-btn" disabled>Старт</button>
+      <button class="control-btn disabled" id="pause-btn" disabled>Пауза/Запуск</button>
+      <button class="control-btn disabled" id="cancel-btn" disabled>Отмена</button>
+      <progress value="0" max="1" style="flex:1;" id="gcode-progress"></progress>
     </div>
 
     <div class="console">
@@ -157,21 +206,21 @@
 
   <div class="control-panel">
     <h3>Ручное управление</h3>
-    <button class="control-btn">On/Off Шпиндель</button>
+    <button class="control-btn" id="spindle-btn">On/Off Шпиндель</button>
 
     <div class="input-group">
       <label>Скорость вращения (об/мин):</label>
-      <input type="number" value="12000">
+      <input type="number" value="12000" id="rpm-input">
     </div>
 
     <div class="input-group">
       <label>Скорость подачи (мм/сек):</label>
-      <input type="number" value="5">
+      <input type="number" value="5" id="feedrate-input">
     </div>
 
     <div class="input-group">
       <label>Шаг (мм):</label>
-      <input type="number" value="10">
+      <input type="number" value="10" id="step-input">
     </div>
 
     <div class="axis-control">
@@ -198,5 +247,144 @@
     <button class="macro-btn">Поднять шпиндель на 50 мм и в безопасную зону</button>
   </div>
 </div>
+<script>
+  // Пункт 1: Смена цвета кнопки «On/Off Шпиндель»
+  const spindleBtn = document.getElementById('spindle-btn');
+  let spindleOn = false;
+  spindleBtn.addEventListener('click', () => {
+    spindleOn = !spindleOn;
+    spindleBtn.classList.toggle('spindle-on', spindleOn);
+  });
+
+  // Пункт 2: Отслеживание изменений в полях ввода
+  const rpmInput = document.getElementById('rpm-input');
+  const feedrateInput = document.getElementById('feedrate-input');
+  const stepInput = document.getElementById('step-input');
+
+  rpmInput.addEventListener('input', (e) => {
+    // console.log('RPM:', e.target.value);
+  });
+  feedrateInput.addEventListener('input', (e) => {
+    // console.log('Feedrate:', e.target.value);
+  });
+  stepInput.addEventListener('input', (e) => {
+    // console.log('Step:', e.target.value);
+  });
+
+  // Пункт 4: Логика загрузки кода и активации кнопок
+  const gcodeFile = document.getElementById('gcode-file');
+  const loadBtn = document.getElementById('load-btn');
+  const startBtn = document.getElementById('start-btn');
+  const pauseBtn = document.getElementById('pause-btn');
+  const cancelBtn = document.getElementById('cancel-btn');
+  let gcodeLoaded = false;
+  let selectedFile = null;
+  let progressInterval = null;
+  const gcodeProgress = document.getElementById('gcode-progress');
+
+  gcodeFile.addEventListener('change', (e) => {
+    selectedFile = e.target.files[0] || null;
+  });
+
+  loadBtn.addEventListener('click', () => {
+    if (selectedFile) {
+      gcodeLoaded = true;
+      startBtn.classList.remove('disabled');
+      pauseBtn.classList.remove('disabled');
+      cancelBtn.classList.remove('disabled');
+      startBtn.disabled = false;
+      pauseBtn.disabled = false;
+      cancelBtn.disabled = false;
+    }
+  });
+
+  // Пункт 5: Блокировка кнопок после запуска и разблокировка после отмены
+  startBtn.addEventListener('click', () => {
+    if (!startBtn.disabled && gcodeLoaded) {
+      // Блокируем «Загрузка кода» и «Старт»
+      loadBtn.classList.add('disabled');
+      loadBtn.disabled = true;
+      startBtn.classList.add('disabled');
+      startBtn.disabled = true;
+      // Пункт 6: Меняем текст кнопки паузы на «Пауза»
+      pauseBtn.textContent = 'Пауза';
+      pauseState = 'pause';
+
+      // Пункт 8: Запуск прогресс-бара
+      gcodeProgress.value = 0;
+      if (progressInterval) clearInterval(progressInterval);
+      progressInterval = setInterval(() => {
+        if (gcodeProgress.value < 1) {
+          gcodeProgress.value = Math.min(1, gcodeProgress.value + 0.01);
+        } else {
+          clearInterval(progressInterval);
+        }
+      }, 50);
+    }
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    if (gcodeLoaded) {
+      // Разблокируем «Загрузка кода» и «Старт»
+      loadBtn.classList.remove('disabled');
+      loadBtn.disabled = false;
+      startBtn.classList.remove('disabled');
+      startBtn.disabled = false;
+      // Пункт 6: Сброс текста кнопки паузы
+      pauseBtn.textContent = 'Пауза/Запуск';
+      pauseState = 'reset';
+      // Пункт 8: Сброс прогресс-бара
+      if (progressInterval) clearInterval(progressInterval);
+      gcodeProgress.value = 0;
+    }
+  });
+
+  // Пункт 6: Логика смены текста кнопки «Пауза/Запуск»
+  let pauseState = 'reset'; // reset | pause | resume
+  pauseBtn.addEventListener('click', () => {
+    if (pauseBtn.disabled) return;
+    if (pauseState === 'pause') {
+      pauseBtn.textContent = 'Запуск';
+      pauseState = 'resume';
+      // Остановить прогресс-бар
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+    } else if (pauseState === 'resume') {
+      pauseBtn.textContent = 'Пауза';
+      pauseState = 'pause';
+      // Возобновить прогресс-бар
+      if (!progressInterval && gcodeProgress.value < 1) {
+        progressInterval = setInterval(() => {
+          if (gcodeProgress.value < 1) {
+            gcodeProgress.value = Math.min(1, gcodeProgress.value + 0.01);
+          } else {
+            clearInterval(progressInterval);
+            progressInterval = null;
+          }
+        }, 50);
+      }
+    }
+  });
+
+  // Изначально кнопки неактивны
+  function setGcodeButtonsDisabled(disabled) {
+    [startBtn, pauseBtn, cancelBtn].forEach(btn => {
+      btn.classList.toggle('disabled', disabled);
+      btn.disabled = disabled;
+    });
+  }
+  setGcodeButtonsDisabled(true);
+
+  // Пункт 9: Переключение мульти/соло режима
+  const modeSwitchBtn = document.getElementById('mode-switch-btn');
+  const visualization = document.getElementById('visualization');
+  const navCube = document.getElementById('nav-cube');
+  const multiLabel = document.getElementById('multi-label');
+  modeSwitchBtn.addEventListener('click', () => {
+    window.location.href = 'FrontMulti.html';
+  });
+</script>
 </body>
 </html>
